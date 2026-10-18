@@ -1,0 +1,54 @@
+name: Bug
+description: Something doesn't work as the acceptance criteria say it should
+title: "Bug: "
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1.
+        2.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Production (GCP)
+        - Local
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Blocks a demo or a payment
+        - A feature is broken but there is a workaround
+        - Cosmetic
+    validations:
+      required: true
+  - type: input
+    id: related
+    attributes:
+      label: Related story
+      placeholder: "#23"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots, logs or browser
