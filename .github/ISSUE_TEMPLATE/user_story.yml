@@ -1,0 +1,74 @@
+name: User story
+description: Something a seller, buyer or admin can do or see that they couldn't before
+title: "[HN-xx] "
+labels: ["type:story", "needs-refinement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use the next free `HN-xx` ID. A story can enter a sprint once it meets the Definition of Ready (docs/BACKLOG.md).
+  - type: dropdown
+    id: role
+    attributes:
+      label: Role
+      options:
+        - Service provider (seller)
+        - Service seeker (buyer)
+        - Admin
+        - Any signed-in user
+    validations:
+      required: true
+  - type: textarea
+    id: story
+    attributes:
+      label: User story
+      value: "**As a** …, **I want** …, **so that** …"
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Observable, testable outcomes. "Given … when … then …" works well.
+      value: |
+        -
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks
+      value: |
+        - [ ] BE:
+        - [ ] FE:
+        - [ ] Tests:
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority (MoSCoW)
+      options:
+        - Must
+        - Should
+        - Could
+        - Won't (this release)
+  - type: dropdown
+    id: points
+    attributes:
+      label: Story points
+      options:
+        - Not estimated yet
+        - "1"
+        - "2"
+        - "3"
+        - "5"
+        - 8 (split before planning)
+  - type: input
+    id: traces
+    attributes:
+      label: Traces to
+      placeholder: e.g. SP-01, SS-08
+  - type: input
+    id: depends
+    attributes:
+      label: Depends on
+      placeholder: e.g. #12, #15
