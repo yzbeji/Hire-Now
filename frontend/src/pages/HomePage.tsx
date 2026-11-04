@@ -1,19 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
-import { apiGet } from '../api/client'
+import { AuthStatus } from '../features/auth/AuthStatus'
+import { ApiStatus } from '../features/health/ApiStatus'
 
 export function HomePage() {
-  const health = useQuery({
-    queryKey: ['health'],
-    queryFn: () => apiGet<{ status: string }>('/health'),
-  })
-
   return (
     <main>
       <h1>HireNow</h1>
-      <p role="status">
-        API:{' '}
-        {health.data?.status ?? (health.isError ? 'unreachable' : 'checking…')}
-      </p>
+      <ApiStatus />
+      <AuthStatus />
     </main>
   )
 }

@@ -54,7 +54,7 @@ Milestones are used for sprints, rather than the Project "Iteration" field, beca
 | Mon / Wed / Fri | Stand-up (async is fine) | 5 min | Each person answers done / next / blocked in the team chat. Add the `blocked` label where needed |
 | All week | Development | | Branch, PR, review, merge. Cards move by themselves through the workflows |
 | Mid-week | Backlog refinement | 15 min, PO + 1 dev | Add acceptance criteria and estimates to upcoming items, and remove `needs-refinement` |
-| Sunday | Sprint review | 20 min | Demo from the production URL, close finished items, and move unfinished ones to the next milestone |
+| Sunday | Sprint review | 20 min | Demo from Docker Compose, or from the production URL once GCP is set up in Sprint 5, close finished items, and move unfinished ones to the next milestone |
 | Sunday | Retrospective | 20 min | Keep / stop / try, recorded in an issue labelled `retro` or in a Discussion |
 
 **Roles.** One **Product Owner** owns the order of the backlog. The **Scrum Master** role rotates each week. Everyone, PO and SM included, is a developer.

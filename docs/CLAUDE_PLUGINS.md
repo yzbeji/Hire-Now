@@ -59,7 +59,7 @@ These files describe real brands. Keep their structure and principles, but don't
 |---|---|---|---|
 | `csharp-lsp` | Official plugin | Core, plus `csharp-ls` from step 2 | Code navigation and compiler errors in the C# solution |
 | `context7` | Official marketplace (Upstash) | Core (automatic) | Up-to-date, version-specific docs for EF Core, FluentValidation, Stripe.net, QuestPDF, MUI and TanStack Query |
-| `microsoft-docs` | Official marketplace (Microsoft Learn) | `/plugin install microsoft-docs@claude-plugins-official` | Current docs for ASP.NET Core, Identity, SignalR and EF Core |
+| `microsoft-docs` | Official marketplace (Microsoft Learn) | `/plugin install microsoft-docs@claude-plugins-official` | Current docs for ASP.NET Core, SignalR and EF Core |
 | `stripe` | Official marketplace (Stripe) | `/plugin install stripe@claude-plugins-official` | Connect onboarding, Checkout, webhooks and transfers (HN-20 to HN-23) |
 | `security-guidance` | Official Anthropic plugin | `/plugin install security-guidance@claude-plugins-official` | Warnings while you edit, plus a review at the end of each turn. Turn it on for authentication (HN-05), payments (E5) and admin (HN-30). The end-of-turn review costs extra tokens, so turn it off for routine work |
 | `feature-dev` | Official Anthropic plugin | `/plugin install feature-dev@claude-plugins-official` | Optional. A guided explore → design → implement workflow for bigger stories |

@@ -8,11 +8,11 @@ The original user stories and their IDs (SP-xx, SS-xx, AD-xx) are in [USER_STORI
 
 | | Items | Story points |
 |---|---|---|
-| Must have (the MVP) | 20 | 72 |
+| Must have (the MVP) | 21 | 77 |
 | Should have | 10 | 28 |
 | Could have | 3 | 11 |
-| **Total** | **33** | **111** |
-| Planned in Sprints 1–5 | 22 | 76 |
+| **Total** | **34** | **116** |
+| Planned in Sprints 1–5 | 23 | 81 |
 
 ## Capacity and estimation
 
@@ -20,21 +20,21 @@ The original user stories and their IDs (SP-xx, SS-xx, AD-xx) are in [USER_STORI
 - **Scrum events** take about 1.5 h per person per week: planning 30 min, review 20 min, retro 20 min, three 5-minute stand-ups and a share of refinement. That leaves **about 32 focused hours per sprint**.
 - **Estimates** use story points on the Fibonacci scale (1, 2, 3, 5, 8). We start with **1 SP ≈ 2 focused hours**, so the target is **about 16 SP per sprint, or about 80 SP in total**. Recalibrate after Sprint 1 using the real velocity.
 - An item estimated at 8 SP must be split before it enters a sprint.
-- **What this means:** the Must-haves (72 SP) use almost all of the capacity. Should and Could items are ordered in the stretch list below and are pulled in only if the team turns out to be faster.
+- **What this means:** the Must-haves (77 SP) use almost all of the capacity. Should and Could items are ordered in the stretch list below and are pulled in only if the team turns out to be faster.
 
 ## Sprint plan
 
 | Sprint | Goal | Items | SP |
 |---|---|---|---|
-| Sprint 1 | Walking skeleton: the app runs locally and in CI, GCP is ready, users can register and sign in | HN-01, HN-02, HN-03, HN-05 | 15 |
-| Sprint 2 | Sellers can publish: the app is deployed and sellers can create, illustrate and edit listings | HN-04, HN-06, HN-07, HN-08, HN-09 | 15 |
+| Sprint 1 | Walking skeleton: the app runs locally and in CI, users can register and sign in through Keycloak | HN-01, HN-02, HN-34, HN-05 | 15 |
+| Sprint 2 | Sellers can publish: sellers can create, illustrate and edit listings | HN-06, HN-07, HN-08, HN-09 | 12 |
 | Sprint 3 | Buyers can find and request: search, seller profile pages, the request and accept flow, order history | HN-10, HN-13, HN-16, HN-17, HN-18 | 16 |
 | Sprint 4 | Talk and pay: chat, Stripe onboarding, paying with the money held, favourites | HN-20, HN-21, HN-27, HN-14 | 15 |
-| Sprint 5 | Close the loop: delivery and payout, reviews, admin moderation, seller terms, final demo | HN-22, HN-28, HN-30, HN-12 | 15 |
+| Sprint 5 | Close the loop: delivery and payout, reviews, admin moderation, seller terms, deployment to GCP, final demo | HN-22, HN-28, HN-30, HN-12, HN-03, HN-04 | 23 |
 
-**How to staff a sprint.** Work in vertical slices: each item has one owner who takes it to Done, pairing backend and frontend work where needed. In Sprint 1, one person owns HN-03 (GCP) while the others build HN-01, HN-02 and HN-05.
+**How to staff a sprint.** Work in vertical slices: each item has one owner who takes it to Done, pairing backend and frontend work where needed. GCP comes last: until HN-03 and HN-04 are done in Sprint 5, the app runs locally with Docker Compose.
 
-**Key dependencies.** Everything needs HN-01 and HN-05. HN-04 needs HN-03. HN-10 and HN-13 share the service card component. HN-17 needs HN-16. HN-22 needs HN-20 and HN-21. HN-28 needs completed orders from HN-22, but can be built in parallel against seeded data.
+**Key dependencies.** Everything needs HN-01 and HN-05. HN-05 needs HN-34. HN-04 needs HN-03. HN-10 and HN-13 share the service card component. HN-17 needs HN-16. HN-22 needs HN-20 and HN-21. HN-28 needs completed orders from HN-22, but can be built in parallel against seeded data.
 
 ## Stretch list
 
@@ -78,14 +78,14 @@ An item can enter a sprint when:
 - The code is merged to `main` through a reviewed PR (1 approval) and CI is green.
 - Business rules (validation, permissions, state changes) are covered by tests.
 - Database changes ship as EF Core migrations, and new endpoints appear in the OpenAPI docs.
-- It is deployed to the GCP production environment (from Sprint 2 onwards).
+- It is deployed to the GCP production environment (from Sprint 5 onwards, once HN-03 and HN-04 are done).
 - No secrets are committed, and the issue is closed.
 
 ## Epics and stories
 
 ## E0 · Foundation & DevOps
 
-Technical enablers that every feature depends on. They don't deliver a feature by themselves, but they make the product buildable, testable and deployable from week 2.
+Technical enablers that every feature depends on. They don't deliver a feature by themselves, but they make the product buildable, testable and deployable.
 
 ### HN-01 · Set up the repository, solution skeleton and team conventions
 
@@ -136,15 +136,16 @@ Technical enablers that every feature depends on. They don't deliver a feature b
 
 | Type | Priority | Points | Sprint | Traces to | Labels |
 |---|---|---|---|---|---|
-| Enabler | Must | 5 | 1 | — | area:devops |
+| Enabler | Must | 5 | 5 | — | area:devops |
 
-**As the** team, **I want** a production environment on Google Cloud, **so that** we can deploy and demo the app from week 2.
+**As the** team, **I want** a production environment on Google Cloud, **so that** we can deploy and demo the final app.
 
 **Acceptance criteria**
 - A GCP project exists with billing, a budget alert, and every teammate added with least-privilege roles.
 - A Cloud SQL for SQL Server instance (Express edition, smallest tier) with a `hirenow` database is reachable from Cloud Run.
+- A Keycloak container runs on Cloud Run with a production database and the `hirenow` realm, without the local test users.
 - An Artifact Registry repository holds API images, and a Cloud Storage bucket holds listing media.
-- The database connection string, JWT signing key and Stripe keys are in Secret Manager. None are in git.
+- The database connection string, Keycloak admin credentials and Stripe keys are in Secret Manager. None are in git.
 - A Firebase Hosting site exists for the frontend.
 - GitHub Actions authenticates to GCP through Workload Identity Federation, with no JSON service-account keys.
 - All setup steps are documented as `gcloud` commands in `docs/infra.md`.
@@ -153,6 +154,7 @@ Technical enablers that every feature depends on. They don't deliver a feature b
 - [ ] Create the project and enable the Cloud Run, Cloud SQL Admin, Artifact Registry, Secret Manager, Cloud Storage and IAM Credentials APIs
 - [ ] Budget alerts at 50% and 90% of the available credits
 - [ ] Cloud SQL instance, database and app user, plus networking (private IP with Direct VPC egress, or the Cloud SQL Auth Proxy)
+- [ ] Keycloak container, its database and the production realm settings
 - [ ] Storage bucket with CORS configured for browser uploads
 - [ ] Secret Manager entries
 - [ ] Workload Identity pool, provider and deploy service account
@@ -163,7 +165,7 @@ Technical enablers that every feature depends on. They don't deliver a feature b
 
 | Type | Priority | Points | Sprint | Traces to | Labels |
 |---|---|---|---|---|---|
-| Enabler | Must | 3 | 2 | — | area:devops |
+| Enabler | Must | 3 | 5 | — | area:devops |
 
 **As the** team, **I want** every merge to `main` deployed automatically, **so that** the latest version is always available for review and demo.
 
@@ -183,6 +185,31 @@ Technical enablers that every feature depends on. They don't deliver a feature b
 
 **Depends on:** HN-02, HN-03
 
+### HN-34 · Set up Keycloak as the identity provider
+
+| Type | Priority | Points | Sprint | Traces to | Labels |
+|---|---|---|---|---|---|
+| Enabler | Must | 5 | 1 | — | area:backend, area:frontend, area:devops |
+
+**As a** developer, **I want** Keycloak running locally and connected to the frontend and the API, **so that** users can sign in and the API can trust who they are.
+
+**Acceptance criteria**
+- `docker compose up` also starts Keycloak with a `hirenow` realm imported from the repository, including the `Seller`, `Buyer` and `Admin` realm roles and one test user per role.
+- The frontend signs users in and out through Keycloak using the authorization code flow with PKCE, and sends the access token to the API.
+- The API validates Keycloak access tokens (issuer, audience, signature and expiry) and rejects anything else with 401.
+- `Seller`, `Buyer` and `Admin` authorization policies are available, based on the token's realm roles.
+- `GET /me` returns the signed-in user and their roles.
+- The realm file contains no passwords. Only local example values are committed, in `.env.example`. The README explains how to sign in locally.
+
+**Tasks**
+- [ ] DevOps: Keycloak service in `docker-compose.yml`, realm import and `.env.example`
+- [ ] BE: JWT bearer authentication, authorization policies and `GET /me`
+- [ ] FE: sign-in and sign-out with `keycloak-js`, and the token on API requests
+- [ ] Tests: token validation and role policies (backend), signed-in and signed-out states (frontend)
+- [ ] Docs: record the switch from ASP.NET Core Identity to Keycloak in `docs/TECH_STACK.md`
+
+**Depends on:** HN-01
+
 ## E1 · Accounts & profiles
 
 These aren't in the original user stories, but every story needs signed-in users who have a role: seller, buyer or admin.
@@ -197,18 +224,17 @@ These aren't in the original user stories, but every story needs signed-in users
 
 **Acceptance criteria**
 - Given a new email address, when I register with a password and choose "Service provider" or "Service seeker", then my account is created with that role and I am signed in.
-- Passwords are hashed by ASP.NET Core Identity, and weak passwords are rejected with a clear message.
-- Signing in with valid credentials returns a token. Invalid credentials show a generic error that doesn't reveal whether the email exists.
-- API endpoints are protected by `Seller`, `Buyer` and `Admin` policies, and an admin account is seeded from configuration.
+- Passwords are stored and hashed by Keycloak, and a password policy rejects weak passwords with a clear message.
+- Signing in through Keycloak with valid credentials returns a token. Invalid credentials show a generic error that doesn't reveal whether the email exists.
+- A new account gets the `Seller` or `Buyer` realm role that matches the choice, and the `Admin` role can only be assigned in Keycloak.
 - I can sign out, and the frontend hides pages my role can't use.
 
 **Tasks**
-- [ ] BE: ASP.NET Core Identity with EF Core stores and bearer-token endpoints
-- [ ] BE: roles, authorization policies and admin seeding
-- [ ] FE: register, sign-in and sign-out pages; an auth context; protected routes
-- [ ] Tests: registration, sign-in and role authorization
+- [ ] Keycloak: self-registration with a seller or buyer choice that assigns the realm role, and a password policy
+- [ ] FE: a register link, role-aware navigation and protected routes
+- [ ] Tests: registration and role-aware pages
 
-**Depends on:** HN-01
+**Depends on:** HN-01, HN-34
 
 ### HN-06 · Manage my profile
 

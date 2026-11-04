@@ -1,0 +1,81 @@
+{
+  "realm": "hirenow",
+  "enabled": true,
+  "loginWithEmailAllowed": true,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [{ "name": "Seller" }, { "name": "Buyer" }, { "name": "Admin" }]
+  },
+  "clients": [
+    {
+      "clientId": "hirenow-frontend",
+      "name": "HireNow frontend",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:5173/*"],
+      "webOrigins": ["http://localhost:5173"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5173/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "hirenow-api audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "hirenow-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        },
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "roles",
+            "multivalued": "true",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "userinfo.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "seller",
+      "email": "seller@hirenow.test",
+      "firstName": "Sam",
+      "lastName": "Seller",
+      "enabled": true,
+      "emailVerified": true,
+      "realmRoles": ["Seller"],
+      "credentials": [{ "type": "password", "value": "${KEYCLOAK_DEV_USER_PASSWORD}" }]
+    },
+    {
+      "username": "buyer",
+      "email": "buyer@hirenow.test",
+      "firstName": "Bo",
+      "lastName": "Buyer",
+      "enabled": true,
+      "emailVerified": true,
+      "realmRoles": ["Buyer"],
+      "credentials": [{ "type": "password", "value": "${KEYCLOAK_DEV_USER_PASSWORD}" }]
+    },
+    {
+      "username": "admin",
+      "email": "admin@hirenow.test",
+      "firstName": "Ada",
+      "lastName": "Admin",
+      "enabled": true,
+      "emailVerified": true,
+      "realmRoles": ["Admin"],
+      "credentials": [{ "type": "password", "value": "${KEYCLOAK_DEV_USER_PASSWORD}" }]
+    }
+  ]
+}
