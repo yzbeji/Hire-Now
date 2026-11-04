@@ -1,12 +1,25 @@
 {
   "realm": "hirenow",
   "enabled": true,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": true,
   "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "passwordPolicy": "length(8) and upperCase(1) and lowerCase(1) and digits(1) and notUsername",
   "bruteForceProtected": true,
   "roles": {
     "realm": [{ "name": "Seller" }, { "name": "Buyer" }, { "name": "Admin" }]
   },
   "clients": [
+    {
+      "clientId": "hirenow-api",
+      "name": "HireNow API",
+      "publicClient": false,
+      "secret": "${KEYCLOAK_API_CLIENT_SECRET}",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    },
     {
       "clientId": "hirenow-frontend",
       "name": "HireNow frontend",
@@ -47,6 +60,12 @@
     }
   ],
   "users": [
+    {
+      "username": "service-account-hirenow-api",
+      "enabled": true,
+      "serviceAccountClientId": "hirenow-api",
+      "clientRoles": { "realm-management": ["manage-users", "view-realm"] }
+    },
     {
       "username": "seller",
       "email": "seller@hirenow.test",
