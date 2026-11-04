@@ -1,3 +1,4 @@
+import { Button, Stack, Typography } from '@mui/material'
 import { keycloak } from './keycloak'
 import { useAuth } from './useAuth'
 import { useCurrentUser } from './useCurrentUser'
@@ -7,39 +8,53 @@ export function AuthStatus() {
   const currentUser = useCurrentUser()
 
   if (!isReady) {
-    return <p>Checking sign-in…</p>
+    return <Typography variant="body2">Checking sign-in…</Typography>
   }
 
   if (!isAuthenticated) {
     return (
-      <button type="button" onClick={() => keycloak.login()}>
-        Sign in
-      </button>
+      <Stack direction="row" spacing={1}>
+        <Button color="inherit" onClick={() => keycloak.login()}>
+          Sign in
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => keycloak.register()}
+        >
+          Register
+        </Button>
+      </Stack>
     )
   }
 
+  const { data: user } = currentUser
+
   return (
-    <>
-      {currentUser.data && (
-        <p>
-          Signed in as {currentUser.data.username} (
-          {currentUser.data.roles.join(', ')})
-        </p>
+    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+      {user && (
+        <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>
+          Signed in as {user.username}
+          {user.roles.length > 0 && ` (${user.roles.join(', ')})`}
+        </Typography>
       )}
       {currentUser.isError && (
         <>
-          <p role="alert">Could not load your account.</p>
-          <button type="button" onClick={() => keycloak.login()}>
+          <Typography role="alert" variant="body2">
+            Could not load your account.
+          </Typography>
+          <Button color="inherit" onClick={() => keycloak.login()}>
             Sign in again
-          </button>
+          </Button>
         </>
       )}
-      <button
-        type="button"
+      <Button
+        color="inherit"
+        sx={{ flexShrink: 0 }}
         onClick={() => keycloak.logout({ redirectUri: window.location.origin })}
       >
         Sign out
-      </button>
-    </>
+      </Button>
+    </Stack>
   )
 }

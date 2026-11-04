@@ -1,7 +1,10 @@
 using System.Security.Claims;
+using HireNow.Application.Accounts;
+using HireNow.Domain;
 using HireNow.Infrastructure;
 using HireNow.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,9 +29,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     options.TokenValidationParameters.RoleClaimType = "roles";
 });
 
-string[] appRoles = ["Seller", "Buyer", "Admin"];
 var authorization = builder.Services.AddAuthorizationBuilder();
-foreach (var role in appRoles)
+foreach (var role in AccountRoles.All)
 {
     authorization.AddPolicy(role, policy => policy.RequireRole(role));
 }
@@ -55,7 +57,24 @@ app.MapGet("/me", (ClaimsPrincipal user) => TypedResults.Ok(new
     Id = user.FindFirstValue("sub"),
     Username = user.Identity?.Name,
     // Keycloak also emits its own realm roles, such as offline_access.
-    Roles = user.FindAll("roles").Select(claim => claim.Value).Where(role => appRoles.Contains(role)),
+    Roles = user.FindAll("roles").Select(claim => claim.Value).Where(role => AccountRoles.All.Contains(role)),
 })).RequireAuthorization();
 
+app.MapPost("/me/role", async Task<Results<NoContent, BadRequest, Conflict>> (
+    ChooseRoleRequest request,
+    ClaimsPrincipal user,
+    IAccountRoleService accountRoles,
+    CancellationToken cancellationToken) =>
+{
+    if (!AccountRoles.SelfService.Contains(request.Role))
+    {
+        return TypedResults.BadRequest();
+    }
+
+    var assigned = await accountRoles.TryAssignInitialRoleAsync(user.FindFirstValue("sub")!, request.Role, cancellationToken);
+    return assigned ? TypedResults.NoContent() : TypedResults.Conflict();
+}).RequireAuthorization();
+
 app.Run();
+
+internal sealed record ChooseRoleRequest(string Role);

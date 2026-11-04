@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using HireNow.Application.Accounts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -19,18 +20,28 @@ public class AuthenticationTests : IDisposable
     private const string Issuer = "https://keycloak.test/realms/hirenow";
     private static readonly SymmetricSecurityKey SigningKey = new(Enumerable.Range(1, 32).Select(i => (byte)i).ToArray());
 
-    // Keeps the app's real JWT options, and only swaps Keycloak's discovery document for a local key.
-    private readonly WebApplicationFactory<Program> _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+    private readonly FakeAccountRoleService _accountRoles = new();
+    private readonly WebApplicationFactory<Program> _factory;
+
+    public AuthenticationTests()
     {
-        builder.UseEnvironment("Testing");
-        builder.UseSetting("Keycloak:Authority", Issuer);
-        builder.ConfigureTestServices(services => services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+        // Keeps the app's real JWT options, and only swaps Keycloak's discovery document for a local key.
+        _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
-            var configuration = new OpenIdConnectConfiguration { Issuer = Issuer };
-            configuration.SigningKeys.Add(SigningKey);
-            options.Configuration = configuration;
-        }));
-    });
+            builder.UseEnvironment("Testing");
+            builder.UseSetting("Keycloak:Authority", Issuer);
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IAccountRoleService>(_accountRoles);
+                services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+                {
+                    var configuration = new OpenIdConnectConfiguration { Issuer = Issuer };
+                    configuration.SigningKeys.Add(SigningKey);
+                    options.Configuration = configuration;
+                });
+            });
+        });
+    }
 
     public void Dispose()
     {
@@ -151,6 +162,72 @@ public class AuthenticationTests : IDisposable
         var result = await authorization.AuthorizeAsync(user, policy);
 
         Assert.Equal(expected, result.Succeeded);
+    }
+
+    private Task<HttpResponseMessage> ChooseRole(string? token, string role)
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = token is null ? null : new AuthenticationHeaderValue("Bearer", token);
+        return client.PostAsJsonAsync("/me/role", new { role });
+    }
+
+    [Theory]
+    [InlineData("Seller")]
+    [InlineData("Buyer")]
+    public async Task Choosing_a_role_assigns_it_to_the_token_subject(string role)
+    {
+        var response = await ChooseRole(CreateToken(), role);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(("user-1", role), Assert.Single(_accountRoles.Assigned));
+    }
+
+    [Theory]
+    [InlineData("Admin")]
+    [InlineData("seller")]
+    [InlineData("")]
+    public async Task Choosing_any_other_role_is_rejected(string role)
+    {
+        var response = await ChooseRole(CreateToken(), role);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Empty(_accountRoles.Assigned);
+    }
+
+    [Fact]
+    public async Task Choosing_a_role_requires_a_token()
+    {
+        var response = await ChooseRole(null, "Seller");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Empty(_accountRoles.Assigned);
+    }
+
+    [Fact]
+    public async Task Choosing_a_role_conflicts_when_the_user_already_has_one()
+    {
+        _accountRoles.AlreadyHasRole = true;
+
+        var response = await ChooseRole(CreateToken(), "Buyer");
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    private sealed class FakeAccountRoleService : IAccountRoleService
+    {
+        public bool AlreadyHasRole { get; set; }
+        public List<(string UserId, string Role)> Assigned { get; } = [];
+
+        public Task<bool> TryAssignInitialRoleAsync(string userId, string role, CancellationToken cancellationToken)
+        {
+            if (AlreadyHasRole)
+            {
+                return Task.FromResult(false);
+            }
+
+            Assigned.Add((userId, role));
+            return Task.FromResult(true);
+        }
     }
 
     private sealed record MeResponse(string Id, string Username, string[] Roles);

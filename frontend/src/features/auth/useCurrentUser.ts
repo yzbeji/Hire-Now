@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { apiGet } from '../../api/client'
 import { useAuth } from './useAuth'
 
-type CurrentUser = { username: string; roles: string[] }
+export type Role = 'Seller' | 'Buyer' | 'Admin'
+
+type CurrentUser = { username: string; roles: Role[] }
 
 export function useCurrentUser() {
   const { isAuthenticated } = useAuth()

@@ -39,7 +39,7 @@ Frontend, from `frontend/`:
 - Every change belongs to a backlog item. Name branches `feat/HN-xx-short-name`, use Conventional Commits, and start the PR body with `Closes #<issue>`.
 - A change is done when it meets the item's acceptance criteria and the Definition of Done in `docs/BACKLOG.md`.
 - Never commit secrets. Locally they go in .NET user secrets; in production they come from Secret Manager.
-- Frontend structure: each feature lives in `frontend/src/features/<name>/` with its query hooks and components. Pages in `src/pages/` only compose those, and never call `useQuery` or the API directly. `src/api/client.ts` is the only file that calls `fetch`.
+- Frontend structure: each feature lives in `frontend/src/features/<name>/` with its query hooks and components. Pages in `src/pages/` only compose those, and never call `useQuery` or the API directly. Routes are in `src/routes.tsx`, and role-protected ones go inside `RequireRole`. The app shell is in `src/components/`. `src/api/client.ts` is the only file that calls `fetch`.
 - Order status changes go through the order state machine (the E4 diagram in `docs/BACKLOG.md`). Never set a status directly.
 
 ## Which tool to use when

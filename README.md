@@ -41,9 +41,17 @@ On macOS, AirPlay Receiver uses port 5000. Turn it off in System Settings if the
 
 ### Signing in
 
-Click **Sign in** on the home page. The local test users are `seller`, `buyer` and `admin`, each with the `KEYCLOAK_DEV_USER_PASSWORD` from `.env`. These are users of the `hirenow` realm, so the `admin` test user is not the Keycloak console's `admin`.
+Click **Register** to create an account, then choose **Service provider** or **Service seeker**. You can also click **Sign in** and use a local test user. The local test users are `seller`, `buyer` and `admin`, each with the `KEYCLOAK_DEV_USER_PASSWORD` from `.env`. These are users of the `hirenow` realm, so the `admin` test user is not the Keycloak console's `admin`.
 
-If you already have a `.env`, add the two Keycloak passwords from `.env.example` to it.
+If you already have a `.env`, add any missing Keycloak lines from `.env.example` to it.
+
+The realm is only imported when it doesn't exist yet. After a change to `keycloak/hirenow-realm.json`, delete the local Keycloak data, which also deletes any accounts you registered locally:
+
+```bash
+docker compose rm -sf keycloak
+docker volume rm hire-now_keycloak-data
+docker compose up --build
+```
 
 ### Running the apps without Docker
 
@@ -53,6 +61,7 @@ Start only the database and Keycloak, then give the API its connection string th
 docker compose up -d db keycloak
 cd backend
 dotnet user-secrets set "ConnectionStrings:Default" "Server=localhost;Database=HireNow;User Id=sa;Password=<password>;TrustServerCertificate=True" --project src/HireNow.Api
+dotnet user-secrets set "Keycloak:ApiClientSecret" "<KEYCLOAK_API_CLIENT_SECRET from .env>" --project src/HireNow.Api
 dotnet run --project src/HireNow.Api
 ```
 
