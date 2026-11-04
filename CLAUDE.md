@@ -19,7 +19,19 @@ A marketplace that connects freelance service providers (sellers) with service s
 
 ## Commands
 
-The code doesn't exist yet. Fill this section in with HN-01 (build, test, lint and run commands for both apps).
+Everything at once: `docker compose up --build` (first run: `cp .env.example .env`).
+
+Backend, from `backend/`:
+
+- Build and test: `dotnet build`, `dotnet test`
+- Run: `dotnet run --project src/HireNow.Api`
+- Add a migration (run `dotnet tool restore` once first): `dotnet ef migrations add <Name> --project src/HireNow.Infrastructure --startup-project src/HireNow.Api --output-dir Persistence/Migrations`
+
+Frontend, from `frontend/`:
+
+- Run: `npm run dev`
+- Lint and build: `npm run lint`, `npm run build`
+- Format: `npm run format`
 
 ## Working rules
 
