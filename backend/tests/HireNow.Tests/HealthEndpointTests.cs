@@ -11,7 +11,9 @@ public class HealthEndpointTests
     {
         // Not "Development", so startup doesn't try to migrate a real database.
         using var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Testing"));
+            .WithWebHostBuilder(builder => builder
+                .UseEnvironment("Testing")
+                .UseSetting("Keycloak:Authority", "https://keycloak.test/realms/hirenow"));
 
         var response = await factory.CreateClient().GetAsync("/health");
 
