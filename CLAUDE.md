@@ -30,7 +30,7 @@ Backend, from `backend/`:
 Frontend, from `frontend/`:
 
 - Run: `npm run dev`
-- Lint and build: `npm run lint`, `npm run build`
+- Lint, test and build: `npm run lint`, `npm test`, `npm run build`
 - Format: `npm run format`
 
 ## Working rules
