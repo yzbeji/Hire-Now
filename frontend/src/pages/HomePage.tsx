@@ -1,12 +1,12 @@
-import { AuthStatus } from '../features/auth/AuthStatus'
+import { Stack } from '@mui/material'
+import { NoticeHero } from '../features/home/NoticeHero'
 import { ApiStatus } from '../features/health/ApiStatus'
 
 export function HomePage() {
   return (
-    <main>
-      <h1>HireNow</h1>
+    <Stack spacing={4}>
+      <NoticeHero />
       <ApiStatus />
-      <AuthStatus />
-    </main>
+    </Stack>
   )
 }
