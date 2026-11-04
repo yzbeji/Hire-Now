@@ -15,11 +15,38 @@ services:
       retries: 20
       start_period: 15s
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Add it to .env, see .env.example}
+      KEYCLOAK_DEV_USER_PASSWORD: ${KEYCLOAK_DEV_USER_PASSWORD:?Add it to .env, see .env.example}
+      # Tokens carry the browser's URL as issuer, while the API reaches Keycloak by service name.
+      KC_HOSTNAME: http://localhost:8081
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+      - ./keycloak:/opt/keycloak/data/import:ro
+    healthcheck:
+      test: >-
+        exec 3<>/dev/tcp/127.0.0.1/9000 &&
+        printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+        grep -q '200 OK' <&3
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
   api:
     build: ./backend
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Default: Server=db;Database=HireNow;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True
+      Keycloak__Authority: http://keycloak:8080/realms/hirenow
     ports:
       - "5000:8080"
     depends_on:
@@ -41,3 +68,4 @@ services:
 
 volumes:
   db-data:
+  keycloak-data:
