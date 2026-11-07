@@ -33,10 +33,19 @@ export function AuthStatus() {
   return (
     <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
       {user && (
+        <Button
+        color="inherit"
+        sx={{ flexShrink: 0 }}
+        onClick={() =>  window.location.href = `${window.location.origin}/profile`} //assuming we dont still need keycloack
+        >
+        
         <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>
-          Signed in as {user.username}
+          
+          Signed in as <b>{user.username}</b>
           {user.roles.length > 0 && ` (${user.roles.join(', ')})`}
         </Typography>
+        
+        </Button>
       )}
       {currentUser.isError && (
         <>

@@ -5,6 +5,7 @@ import { AdminPage } from './pages/AdminPage'
 import { BuyerPage } from './pages/BuyerPage'
 import { HomePage } from './pages/HomePage'
 import { SellerPage } from './pages/SellerPage'
+import { ProfilePage } from './pages/ProfilePage'
 
 export const routes: RouteObject[] = [
   {
@@ -23,6 +24,9 @@ export const routes: RouteObject[] = [
         element: <RequireRole role="Admin" />,
         children: [{ path: '/admin', element: <AdminPage /> }],
       },
+      {
+        children: [{path: '/profile/:id?', element: <ProfilePage />}]
+      }
     ],
   },
 ]
