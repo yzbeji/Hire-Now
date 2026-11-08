@@ -20,9 +20,18 @@ async function request(path: string, init?: RequestInit) {
 
   const response = await fetch(`${baseUrl}${path}`, { ...init, headers })
   if (!response.ok) {
-    throw new Error(
+    let payload: unknown = undefined
+    const contentType = response.headers.get('content-type') ?? ''
+    if (contentType.includes('application/json')) {
+      payload = await response.json().catch(() => undefined)
+    }
+
+    const error = new Error(
       `${init?.method ?? 'GET'} ${path} failed with status ${response.status}`,
-    )
+    ) as Error & { status?: number; payload?: unknown }
+    error.status = response.status
+    error.payload = payload
+    throw error
   }
   return response
 }
@@ -32,10 +41,27 @@ export async function apiGet<T>(path: string): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export async function apiPost(path: string, body: unknown): Promise<void> {
-  await request(path, {
+export async function apiPost<T = void>(path: string, body: unknown): Promise<T> {
+  const response = await request(path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+
+  const contentType = response.headers.get('content-type') ?? ''
+  if (contentType.includes('application/json')) {
+    return response.json() as Promise<T>
+  }
+
+  return undefined as T
+}
+
+export async function apiPut<T>(path: string, body: unknown): Promise<T> {
+  const response = await request(path, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+  return response.json() as Promise<T>
 }

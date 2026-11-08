@@ -45,33 +45,128 @@ namespace HireNow.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Programming"
+                            Name = "Other"
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Graphic Design"
+                            Name = "Programming"
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Consulting"
+                            Name = "Graphic Design"
                         },
                         new
                         {
                             Id = 4,
-                            Name = "Tutoring"
+                            Name = "Consulting"
                         },
                         new
                         {
                             Id = 5,
-                            Name = "Photography"
+                            Name = "Tutoring"
                         },
                         new
                         {
                             Id = 6,
+                            Name = "Photography"
+                        },
+                        new
+                        {
+                            Id = 7,
                             Name = "Home Repairs"
                         });
+                });
+
+            modelBuilder.Entity("HireNow.Domain.Listing", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("MaximumPrice")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("MinimumPrice")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Listings");
+                });
+
+            modelBuilder.Entity("HireNow.Domain.Profile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ProfilePhoto")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("UserId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Profiles");
+                });
+
+            modelBuilder.Entity("HireNow.Domain.Listing", b =>
+                {
+                    b.HasOne("HireNow.Domain.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
                 });
 #pragma warning restore 612, 618
         }

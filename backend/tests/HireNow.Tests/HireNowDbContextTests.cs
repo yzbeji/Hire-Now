@@ -28,6 +28,18 @@ public class HireNowDbContextTests
     }
 
     [Fact]
+    public void Profile_entity_is_configured()
+    {
+        using var context = CreateContext();
+
+        var profile = context.Model.FindEntityType(typeof(Profile));
+
+        Assert.NotNull(profile);
+        Assert.Equal(1000, profile!.FindProperty(nameof(Profile.Bio))!.GetMaxLength());
+        Assert.Equal("UserId", profile.FindProperty(nameof(Profile.UserId))!.GetColumnName());
+    }
+
+    [Fact]
     public void Migrations_match_the_model()
     {
         using var context = CreateContext();
