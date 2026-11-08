@@ -1,6 +1,6 @@
 import { Alert, Button, Card, CardContent, Stack, TextField, Typography } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { apiGet, apiPut } from '../api/client'
 import { useAuth } from '../features/auth/useAuth'
@@ -51,19 +51,21 @@ export function DisplayProfile(id: string | null) {
     enabled: isReady && (!!id || isAuthenticated),
   })
 
-  useEffect(() => {
-    if (!profile) {
-      setForm(emptyProfile)
-      return
-    }
-
-    setForm({
-      displayName: profile.displayName ?? '',
-      bio: profile.bio ?? '',
-      location: profile.location ?? '',
-      profilePhoto: profile.profilePhoto ?? '',
-    })
-  }, [profile])
+  // Refills the form whenever a different profile loads, during render rather than in an effect.
+  const [loadedProfile, setLoadedProfile] = useState(profile)
+  if (profile !== loadedProfile) {
+    setLoadedProfile(profile)
+    setForm(
+      profile
+        ? {
+            displayName: profile.displayName ?? '',
+            bio: profile.bio ?? '',
+            location: profile.location ?? '',
+            profilePhoto: profile.profilePhoto ?? '',
+          }
+        : emptyProfile,
+    )
+  }
 
   const saveProfile = useMutation({
     mutationFn: (values: ProfileForm) =>
