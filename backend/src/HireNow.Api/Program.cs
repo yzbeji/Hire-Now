@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using HireNow.Api.Development;
 using HireNow.Api.Listings;
+using HireNow.Api.Services;
 using HireNow.Application.Accounts;
 using HireNow.Domain;
 using HireNow.Infrastructure;
@@ -76,6 +77,7 @@ app.MapGet("/categories", async (HireNowDbContext db, CancellationToken cancella
         .ToListAsync(cancellationToken)));
 app.MapPut("/me/profile", UpdateCurrentProfile).RequireAuthorization();
 app.MapListingEndpoints();
+app.MapPublicServiceEndpoints();
 
 app.MapPost("/me/role", async Task<Results<NoContent, BadRequest, Conflict>> (
     ChooseRoleRequest request,

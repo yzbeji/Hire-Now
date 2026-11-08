@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Link as MuiLink,
   Paper,
   Stack,
   Typography,
@@ -109,7 +110,13 @@ function ListingRow({
               component="h2"
               sx={{ overflowWrap: 'anywhere' }}
             >
-              {listing.title}
+              {listing.status === 'Published' ? (
+                <MuiLink component={Link} to={`/services/${listing.id}`}>
+                  {listing.title}
+                </MuiLink>
+              ) : (
+                listing.title
+              )}
             </Typography>
             <Chip
               size="small"

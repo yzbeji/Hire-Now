@@ -1,8 +1,10 @@
 import { Alert, Button, Stack, Typography } from '@mui/material'
 import { Link, useLocation } from 'react-router'
+import { useCurrentUser } from '../features/auth/useCurrentUser'
 import { MyListings } from '../features/listings/MyListings'
 
 export function MyListingsPage() {
+  const { data: me } = useCurrentUser()
   const notice = (useLocation().state as { notice?: string } | null)?.notice
 
   return (
@@ -20,9 +22,24 @@ export function MyListingsPage() {
         <Typography variant="h2" component="h1">
           My services
         </Typography>
-        <Button component={Link} to="/seller/listings/new" variant="contained">
-          Create a listing
-        </Button>
+        <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap', rowGap: 2 }}>
+          {me && (
+            <Button
+              component={Link}
+              to={`/sellers/${encodeURIComponent(me.id)}`}
+              variant="outlined"
+            >
+              View my public profile
+            </Button>
+          )}
+          <Button
+            component={Link}
+            to="/seller/listings/new"
+            variant="contained"
+          >
+            Create a listing
+          </Button>
+        </Stack>
       </Stack>
       {notice && <Alert severity="success">{notice}</Alert>}
       <MyListings />

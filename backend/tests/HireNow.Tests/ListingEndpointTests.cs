@@ -1,84 +1,23 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using HireNow.Application.Listings;
 using HireNow.Domain;
-using HireNow.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.IdentityModel.Tokens;
 
 namespace HireNow.Tests;
 
 public class ListingEndpointTests : IDisposable
 {
-    private const string Issuer = "https://keycloak.test/realms/hirenow";
-    private static readonly SymmetricSecurityKey SigningKey = new(Enumerable.Range(1, 32).Select(i => (byte)i).ToArray());
+    private readonly TestApi _api = new();
+    private readonly TestApi.FakeListingOrders _orders;
 
-    private readonly FakeListingOrders _orders = new();
-    private readonly WebApplicationFactory<Program> _factory;
-
-    public ListingEndpointTests()
-    {
-        var databaseName = Guid.NewGuid().ToString();
-        _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-        {
-            builder.UseEnvironment("Testing");
-            builder.UseSetting("Keycloak:Authority", Issuer);
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddSingleton<IListingOrders>(_orders);
-
-                // Replace SQL Server with a database private to this test.
-                foreach (var descriptor in services.Where(d =>
-                    d.ServiceType == typeof(DbContextOptions<HireNowDbContext>) ||
-                    d.ServiceType == typeof(IDbContextOptionsConfiguration<HireNowDbContext>)).ToList())
-                {
-                    services.Remove(descriptor);
-                }
-                services.AddDbContext<HireNowDbContext>(options => options.UseInMemoryDatabase(databaseName));
-
-                services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
-                {
-                    var configuration = new OpenIdConnectConfiguration { Issuer = Issuer };
-                    configuration.SigningKeys.Add(SigningKey);
-                    options.Configuration = configuration;
-                });
-            });
-        });
-
-        using var scope = _factory.Services.CreateScope();
-        scope.ServiceProvider.GetRequiredService<HireNowDbContext>().Database.EnsureCreated();
-    }
+    public ListingEndpointTests() => _orders = _api.Orders;
 
     public void Dispose()
     {
-        _factory.Dispose();
+        _api.Dispose();
         GC.SuppressFinalize(this);
     }
 
-    private HttpClient ClientFor(string userId, string role = AccountRoles.Seller)
-    {
-        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
-        {
-            Issuer = Issuer,
-            Audience = "hirenow-api",
-            Expires = DateTime.UtcNow.AddMinutes(5),
-            SigningCredentials = new SigningCredentials(SigningKey, SecurityAlgorithms.HmacSha256),
-            Claims = new Dictionary<string, object> { ["sub"] = userId, ["roles"] = new[] { role } },
-        });
-
-        var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        return client;
-    }
+    private HttpClient ClientFor(string userId, string role = AccountRoles.Seller) => _api.ClientFor(userId, role);
 
     private static readonly object ValidListing = new
     {
@@ -90,7 +29,7 @@ public class ListingEndpointTests : IDisposable
         status = "Published",
     };
 
-    private static async Task<ListingDto> Create(HttpClient client, string status = "Published")
+    internal static async Task<ListingDto> Create(HttpClient client, string status = "Published")
     {
         var response = await client.PostAsJsonAsync("/me/listings", new
         {
@@ -246,15 +185,7 @@ public class ListingEndpointTests : IDisposable
         Assert.Equal(["Unpublished", "Draft"], mine!.Select(l => l.Status));
     }
 
-    private sealed class FakeListingOrders : IListingOrders
-    {
-        public HashSet<int> ListingsWithActiveOrders { get; } = [];
-
-        public Task<bool> HasActiveOrdersAsync(int listingId, CancellationToken cancellationToken) =>
-            Task.FromResult(ListingsWithActiveOrders.Contains(listingId));
-    }
-
-    private sealed record ListingDto(int Id, string Title, string Description, string Category, long MinimumPrice, long MaximumPrice, string Status);
+    internal sealed record ListingDto(int Id, string Title, string Description, string Category, long MinimumPrice, long MaximumPrice, string Status);
 
     private sealed record ValidationProblem(Dictionary<string, string[]> Errors);
 }

@@ -8,6 +8,8 @@ import { HomePage } from './pages/HomePage'
 import { MyListingsPage } from './pages/MyListingsPage'
 import { NewListingPage } from './pages/NewListingPage'
 import { SellerPage } from './pages/SellerPage'
+import { SellerProfilePage } from './pages/SellerProfilePage'
+import { ServicePage } from './pages/ServicePage'
 import { ProfilePage } from './pages/ProfilePage'
 
 export const routes: RouteObject[] = [
@@ -15,6 +17,8 @@ export const routes: RouteObject[] = [
     element: <AppLayout />,
     children: [
       { path: '/', element: <HomePage /> },
+      { path: '/sellers/:id', element: <SellerProfilePage /> },
+      { path: '/services/:id', element: <ServicePage /> },
       {
         element: <RequireRole role="Seller" />,
         children: [
