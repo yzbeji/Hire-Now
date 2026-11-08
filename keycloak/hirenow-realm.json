@@ -67,6 +67,7 @@
       "clientRoles": { "realm-management": ["manage-users", "view-realm"] }
     },
     {
+      "id": "5e11e400-0000-4000-8000-000000000001",
       "username": "seller",
       "email": "seller@hirenow.test",
       "firstName": "Sam",
@@ -77,6 +78,7 @@
       "credentials": [{ "type": "password", "value": "${KEYCLOAK_DEV_USER_PASSWORD}" }]
     },
     {
+      "id": "b0b0b0b0-0000-4000-8000-000000000002",
       "username": "buyer",
       "email": "buyer@hirenow.test",
       "firstName": "Bo",
@@ -87,6 +89,7 @@
       "credentials": [{ "type": "password", "value": "${KEYCLOAK_DEV_USER_PASSWORD}" }]
     },
     {
+      "id": "ad000000-0000-4000-8000-000000000003",
       "username": "admin",
       "email": "admin@hirenow.test",
       "firstName": "Ada",

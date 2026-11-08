@@ -41,27 +41,36 @@ export async function apiGet<T>(path: string): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export async function apiPost<T = void>(path: string, body: unknown): Promise<T> {
-  const response = await request(path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-
+async function readBody<T>(response: Response): Promise<T> {
   const contentType = response.headers.get('content-type') ?? ''
-  if (contentType.includes('application/json')) {
+  if (contentType.includes('json')) {
     return response.json() as Promise<T>
   }
 
   return undefined as T
 }
 
-export async function apiPut<T>(path: string, body: unknown): Promise<T> {
-  const response = await request(path, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+function jsonInit(method: string, body: unknown): RequestInit {
+  return body === undefined
+    ? { method }
+    : {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }
+}
 
-  return response.json() as Promise<T>
+export async function apiPost<T = void>(
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  return readBody<T>(await request(path, jsonInit('POST', body)))
+}
+
+export async function apiPut<T>(path: string, body: unknown): Promise<T> {
+  return readBody<T>(await request(path, jsonInit('PUT', body)))
+}
+
+export async function apiDelete(path: string): Promise<void> {
+  await request(path, { method: 'DELETE' })
 }
