@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { apiGet, apiPut } from '../api/client'
 import { useAuth } from '../features/auth/useAuth'
-import { useCurrentUser } from '../features/auth/useCurrentUser'
+import { ChatButton } from '../features/chat/ChatButton'
 
 type Profile = {
   userId: string
@@ -30,7 +30,6 @@ const emptyProfile: ProfileForm = {
 
 export function DisplayProfile(id: string | null) {
   const { isReady, isAuthenticated } = useAuth()
-  const { data: currentUser } = useCurrentUser()
   const queryClient = useQueryClient()
     const [form, setForm] = useState<ProfileForm>(emptyProfile)
 
@@ -156,9 +155,7 @@ export function DisplayProfile(id: string | null) {
           )}
           <Typography variant="body1">{profile.location || 'Location not set'}</Typography>
           <Typography variant="body1">{profile.bio || 'No bio yet.'}</Typography>
-          {currentUser && currentUser.roles.includes('Buyer') && profile.userId !== currentUser.id && (
-            <Alert severity="info">This profile is only visible to signed-in sellers.</Alert>
-          )}
+          <ChatButton sellerId={profile.userId} />
         </Stack>
       </CardContent>
     </Card>
