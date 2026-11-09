@@ -1,10 +1,12 @@
-import { Alert, Button, Card, CardContent, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Card, Stack, CardContent, TextField, Typography } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { data, useParams } from 'react-router-dom'
 import { apiGet, apiPut } from '../api/client'
 import { useAuth } from '../features/auth/useAuth'
 import { useCurrentUser } from '../features/auth/useCurrentUser'
+import { canary, ink } from '../theme'
+import { SellerProfileView } from '../features/services/SellerProfileView'
 
 type Profile = {
   userId: string
@@ -29,6 +31,7 @@ const emptyProfile: ProfileForm = {
 }
 
 export function DisplayProfile(id: string | null) {
+  
   const { isReady, isAuthenticated } = useAuth()
   const { data: currentUser } = useCurrentUser()
   const queryClient = useQueryClient()
@@ -91,7 +94,59 @@ export function DisplayProfile(id: string | null) {
 
   if (isOwnProfile) {
     return (
+
+      
       <Card sx={{ maxWidth: 760, mx: 'auto', mt: 4, p: 1 }}>
+        
+            <Stack spacing={4} sx={{ maxWidth: 1100 }}>
+              <Box
+                sx={{ bgcolor: canary, color: ink, maxWidth: 720, p: { xs: 3, sm: 5 } }}
+              >
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={3}
+                  sx={{ alignItems: { sm: 'flex-start' } }}
+                >
+                  {profile?.profilePhoto && (
+                    <Box
+                      component="img"
+                      src={profile?.profilePhoto}
+                      alt=""
+                      sx={{
+                        width: 120,
+                        height: 120,
+                        objectFit: 'cover',
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
+                  <Stack spacing={1.5} sx={{ minWidth: 0 }}>
+                    <Typography
+                      variant="h2"
+                      component="h1"
+                      sx={{ overflowWrap: 'anywhere' }}
+                    >
+                      {profile?.displayName}
+                    </Typography>
+                    {profile?.location && (
+                      <Typography sx={{ fontWeight: 700 }}>{profile?.location}</Typography>
+                    )}
+                    {profile?.bio && (
+                      <Typography sx={{ whiteSpace: 'pre-line' }}>
+                        {profile?.bio}
+                      </Typography>
+                    )}
+                    <Box
+                      component="dl"
+                      sx={{ display: 'flex', flexWrap: 'wrap', gap: 4, m: 0, pt: 1 }}
+                    >
+                    </Box>
+                  </Stack>
+                </Stack>
+              </Box>
+            </Stack>
+
+      {/* /////////////FORM FOR EDITING PROFILE////////////////////// */}
         <CardContent>
           <Stack spacing={3}>
             <Typography variant="h3">Your profile</Typography>
