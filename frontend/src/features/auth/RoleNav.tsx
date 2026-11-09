@@ -31,6 +31,11 @@ export function RoleNav() {
             {label}
           </Button>
         ))}
+      {user && (
+        <Button component={NavLink} to="/chat" color="inherit">
+          Chat
+        </Button>
+      )}
     </Stack>
   )
 }

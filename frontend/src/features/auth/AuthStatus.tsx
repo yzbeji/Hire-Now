@@ -1,4 +1,5 @@
 import { Button, Stack, Typography } from '@mui/material'
+import { Link } from 'react-router'
 import { keycloak } from './keycloak'
 import { useAuth } from './useAuth'
 import { useCurrentUser } from './useCurrentUser'
@@ -33,10 +34,21 @@ export function AuthStatus() {
   return (
     <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
       {user && (
-        <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>
-          Signed in as {user.username}
-          {user.roles.length > 0 && ` (${user.roles.join(', ')})`}
-        </Typography>
+        <Button
+          component={Link}
+          to="/profile"
+          color="inherit"
+          sx={{ flexShrink: 0, textTransform: 'none' }}
+        >
+          <Typography
+            component="span"
+            variant="body2"
+            sx={{ overflowWrap: 'anywhere' }}
+          >
+            Signed in as <b>{user.username}</b>
+            {user.roles.length > 0 && ` (${user.roles.join(', ')})`}
+          </Typography>
+        </Button>
       )}
       {currentUser.isError && (
         <>
