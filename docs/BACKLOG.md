@@ -26,11 +26,11 @@ The original user stories and their IDs (SP-xx, SS-xx, AD-xx) are in [USER_STORI
 
 | Sprint | Goal | Items | SP |
 |---|---|---|---|
-| Sprint 1 | Walking skeleton: the app runs locally and in CI, users can register and sign in through Keycloak | HN-01, HN-02, HN-34, HN-05 | 15 |
-| Sprint 2 | Sellers can publish: sellers can create, illustrate and edit listings | HN-06, HN-07, HN-08, HN-09 | 12 |
-| Sprint 3 | Buyers can find and request: search, seller profile pages, the request and accept flow, order history | HN-10, HN-13, HN-16, HN-17, HN-18 | 16 |
-| Sprint 4 | Talk and pay: chat, Stripe onboarding, paying with the money held, favourites | HN-20, HN-21, HN-27, HN-14 | 15 |
-| Sprint 5 | Close the loop: delivery and payout, reviews, admin moderation, seller terms, deployment to GCP, final demo | HN-22, HN-28, HN-30, HN-12, HN-03, HN-04 | 23 |
+| Sprint 1 | App foundation implemented: repository, CI, GCP provisioning, accounts, profiles, listings, search and chat | HN-01, HN-02, HN-03, HN-05, HN-06, HN-07, HN-08, HN-09, HN-10, HN-13, HN-27 | 40 |
+| Sprint 2 | Request and manage orders: verify and complete Keycloak setup, request services, accept or decline requests, view order history | HN-34, HN-16, HN-17, HN-18 | 13 |
+| Sprint 3 | Prepare and pay: seller terms, favourites, Stripe onboarding and payment with the money held | HN-12, HN-14, HN-20, HN-21 | 12 |
+| Sprint 4 | Complete the transaction: proof of delivery, payment release and buyer reviews | HN-22, HN-28 | 8 |
+| Sprint 5 | Prepare the release: admin moderation, continuous deployment to GCP, integration checks, fixes and final demo | HN-30, HN-04 | 8 |
 
 **How to staff a sprint.** Work in vertical slices: each item has one owner who takes it to Done, pairing backend and frontend work where needed. GCP comes last: until HN-03 and HN-04 are done in Sprint 5, the app runs locally with Docker Compose.
 
