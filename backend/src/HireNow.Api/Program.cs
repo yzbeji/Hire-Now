@@ -2,18 +2,23 @@ using System.Security.Claims;
 using HireNow.Api.Development;
 using HireNow.Api.Listings;
 using HireNow.Api.Services;
+using HireNow.Api.Endpoints;
+using HireNow.Api.Hubs;
 using HireNow.Application.Accounts;
 using HireNow.Domain;
 using HireNow.Infrastructure;
 using HireNow.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, KeycloakUserIdProvider>();
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddHostedService<DevelopmentDataSeeder>();
@@ -21,7 +26,8 @@ if (builder.Environment.IsDevelopment())
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .WithOrigins(builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? [])
     .AllowAnyHeader()
-    .AllowAnyMethod()));
+    .AllowAnyMethod()
+    .AllowCredentials()));
 
 var keycloakAuthority = builder.Configuration["Keycloak:Authority"]
     ?? throw new InvalidOperationException("Keycloak:Authority is not configured.");
@@ -34,6 +40,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     options.MapInboundClaims = false;
     options.TokenValidationParameters.NameClaimType = "preferred_username";
     options.TokenValidationParameters.RoleClaimType = "roles";
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            // Browser WebSocket and SSE clients send JWTs in the query string.
+            if (context.HttpContext.Request.Path.StartsWithSegments(ChatHub.Path)
+                && context.Request.Query.TryGetValue("access_token", out var token))
+            {
+                context.Token = token;
+            }
+
+            return Task.CompletedTask;
+        },
+    };
 });
 
 var authorization = builder.Services.AddAuthorizationBuilder();
@@ -56,6 +76,10 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapChatEndpoints();
+app.MapHub<ChatHub>(ChatHub.Path, options => options.CloseOnAuthenticationExpiration = true)
+    .RequireAuthorization(policy => policy.RequireClaim("sub"));
 
 app.MapGet("/health", () => TypedResults.Ok(new { Status = "Healthy" }));
 

@@ -6,7 +6,7 @@ import { apiGet, apiPut } from '../api/client'
 import { useAuth } from '../features/auth/useAuth'
 import { useCurrentUser } from '../features/auth/useCurrentUser'
 import { canary, ink } from '../theme'
-import { SellerProfileView } from '../features/services/SellerProfileView'
+import { ChatButton } from '../features/chat/ChatButton'
 
 type Profile = {
   userId: string
@@ -214,6 +214,7 @@ export function DisplayProfile(id: string | null) {
           {currentUser && currentUser.roles.includes('Buyer') && profile.userId !== currentUser.id && (
             <Alert severity="info">This profile is only visible to signed-in sellers.</Alert>
           )}
+          <ChatButton sellerId={profile.userId} />
         </Stack>
       </CardContent>
     </Card>

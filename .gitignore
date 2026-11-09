@@ -4,4 +4,4 @@ obj/
 .vs/
 *.user
 .claude/settings.local.json
-"node_modules/" 
+node_modules/

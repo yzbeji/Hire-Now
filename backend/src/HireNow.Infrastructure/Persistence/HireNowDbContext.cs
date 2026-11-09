@@ -8,6 +8,8 @@ public class HireNowDbContext(DbContextOptions<HireNowDbContext> options) : DbCo
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Profile> Profiles => Set<Profile>();
     public DbSet<Listing> Listings => Set<Listing>();
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

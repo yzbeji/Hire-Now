@@ -1,5 +1,7 @@
 using HireNow.Application.Accounts;
 using HireNow.Application.Listings;
+using HireNow.Application.Chat;
+using HireNow.Infrastructure.Chat;
 using HireNow.Infrastructure.Keycloak;
 using HireNow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +18,7 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("Default")));
         services.AddHttpClient<IAccountRoleService, KeycloakAccountRoleService>();
         services.AddScoped<IListingOrders, ListingOrders>();
+        services.AddScoped<IChatService, ChatService>();
         return services;
     }
 }

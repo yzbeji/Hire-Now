@@ -11,6 +11,7 @@ import { SellerPage } from './pages/SellerPage'
 import { SellerProfilePage } from './pages/SellerProfilePage'
 import { ServicePage } from './pages/ServicePage'
 import { ProfilePage } from './pages/ProfilePage'
+import { ChatPage } from './pages/ChatPage'
 
 export const routes: RouteObject[] = [
   {
@@ -19,6 +20,7 @@ export const routes: RouteObject[] = [
       { path: '/', element: <HomePage /> },
       { path: '/sellers/:id', element: <SellerProfilePage /> },
       { path: '/services/:id', element: <ServicePage /> },
+      { path: '/chat/:conversationId?', element: <ChatPage /> },
       {
         element: <RequireRole role="Seller" />,
         children: [

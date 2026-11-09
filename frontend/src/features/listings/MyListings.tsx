@@ -26,13 +26,20 @@ import {
   type ListingStatus,
 } from './useListings'
 
+import {
+  emptyFilters,
+  filterListings,
+  hasActiveFilters,
+  type ListingFilters,
+} from './listingFilters'
+
 const statusLabels: Record<ListingStatus, string> = {
   Published: 'Live',
   Draft: 'Draft',
   Unpublished: 'Hidden from search',
 }
 
-export function MyListings() {
+export function MyListings({ filters = emptyFilters }: { filters?: ListingFilters }) {
   const listings = useMyListings()
   const [deleting, setDeleting] = useState<Listing | null>(null)
 
@@ -59,10 +66,17 @@ export function MyListings() {
     )
   }
 
+  const visible = filterListings(listings.data, filters)
+
   return (
     <>
+      {visible.length === 0 && hasActiveFilters(filters) && (
+        <Typography color="text.secondary">
+          No services match your search.
+        </Typography>
+      )}
       <Stack component="ul" spacing={2} sx={{ listStyle: 'none', p: 0, m: 0 }}>
-        {listings.data.map((listing) => (
+        {visible.map((listing) => (
           <ListingRow
             key={listing.id}
             listing={listing}
