@@ -10,7 +10,7 @@ All chat requests require a Keycloak access token for `hirenow-api`.
 
 | Request | Behavior |
 | --- | --- |
-| `POST /conversations` with `{ "sellerId": "<Keycloak sub>" }` | Buyers start or reopen a conversation with another user's existing profile. Returns its `id`, `buyerId`, and `sellerId`. |
+| `POST /conversations` with `{ "sellerId": "<Keycloak sub>" }` | Buyers start or reopen a conversation with another user who has a profile or published service. Returns its `id`, `buyerId`, and `sellerId`. |
 | `GET /conversations` | Lists only the current user's conversations, including the other participant's display name. |
 | `GET /conversations/{id}/messages` | Returns history in chronological order. Returns 404 when the conversation does not exist or the caller is not a participant. |
 
@@ -36,19 +36,28 @@ See [Microsoft's SignalR authentication documentation](https://learn.microsoft.c
 
 1. Run `docker compose up --build -V` to install the SignalR client in the
    frontend container and start the updated API.
-2. Sign in as `seller`, open your profile from the account button, and save a
-   display name if you have not created a profile yet. The authenticated
-   `GET /me` response contains your Keycloak user ID.
+2. Sign in as `seller` and publish a service under **My services**, or save your
+   profile. The authenticated `GET /me` response contains your Keycloak user ID.
 3. In a separate browser session (for example, a private window), sign in as
-   `buyer`. Open `http://localhost:5173/profile/<seller-user-id>` and choose
-   **Chat**. It opens `/chat/<conversation-id>`.
+   `buyer`. Open the seller's service page at `/services/<service-id>` or profile
+   at `/sellers/<seller-user-id>` and choose **Contact seller**. This creates or
+   reopens the conversation and opens `/chat/<conversation-id>`. No message is
+   sent until the buyer types one and chooses **Send**.
 4. As the seller, open **Chat** in the navigation. Send a message as the buyer;
    the conversation appears for the seller, who can select it and reply.
 5. Send messages in both directions. Refresh either window to confirm history
-   is retained. Choosing **Chat** on the same profile reopens the conversation.
+   is retained. Choosing **Contact seller** again reopens the same conversation,
+   including when contacting the seller from a different service.
 
 Use the development user password configured in `.env`. No extra authentication
-setup or database seed is required beyond saving the seller's profile.
+setup is required. A seller with a published service can receive messages even
+without a saved profile. The button is shown only to buyers contacting another
+user; the backend also requires the Buyer role when starting a conversation.
+
+If your Keycloak volume predates the fixed user IDs in the realm seed, the
+sample listings may belong to a different ID than the account you sign in with.
+For a two-account demo, use the seller ID returned by `GET /me` and that account's
+own profile or published services. The sample-only seller Rita has no login account.
 
 ## Verification
 

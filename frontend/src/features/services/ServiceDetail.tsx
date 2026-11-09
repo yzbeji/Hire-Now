@@ -12,6 +12,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useCurrentUser } from '../auth/useCurrentUser'
 import { RequestServiceDialog } from '../requests/RequestServiceDialog'
+import { ChatButton } from '../chat/ChatButton'
 import { formatPriceRange } from './format'
 import { Rating } from './Rating'
 import { useService } from './useServices'
@@ -106,6 +107,7 @@ export function ServiceDetail({ id }: { id: number }) {
         <Typography sx={{ whiteSpace: 'pre-line' }}>
           {data.description}
         </Typography>
+        <ChatButton sellerId={data.seller.userId} />
       </Stack>
     </Paper>
   )

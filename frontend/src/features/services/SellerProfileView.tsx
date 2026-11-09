@@ -1,5 +1,6 @@
 import { Alert, Box, CircularProgress, Stack, Typography } from '@mui/material'
 import { canary, ink } from '../../theme'
+import { ChatButton } from '../chat/ChatButton'
 import { Rating } from './Rating'
 import { ServiceCard } from './ServiceCard'
 import { useSellerProfile } from './useServices'
@@ -81,6 +82,7 @@ export function SellerProfileView({ userId }: { userId: string }) {
                 </Typography>
               </div>
             </Box>
+            <ChatButton sellerId={data.userId} />
           </Stack>
         </Stack>
       </Box>

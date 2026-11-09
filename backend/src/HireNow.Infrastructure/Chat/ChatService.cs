@@ -1,4 +1,5 @@
 using HireNow.Application.Chat;
+using HireNow.Domain;
 using HireNow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,9 +28,13 @@ public sealed class ChatService(HireNowDbContext db) : IChatService
             return ConversationDto.From(conversation);
         }
 
-        if (!await db.Profiles.AnyAsync(p => p.UserId == sellerId, cancellationToken))
+        var hasProfile = await db.Profiles.AnyAsync(p => p.UserId == sellerId, cancellationToken);
+        var hasPublishedService = !hasProfile && await db.Listings.AnyAsync(
+            l => l.UserId == sellerId && l.Status == ListingStatus.Published, cancellationToken);
+
+        if (!hasProfile && !hasPublishedService)
         {
-            throw new ArgumentException("The recipient's profile does not exist.");
+            throw new ArgumentException("The recipient's profile or published service does not exist.");
         }
 
         conversation = new Conversation

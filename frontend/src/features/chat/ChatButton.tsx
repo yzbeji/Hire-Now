@@ -27,7 +27,7 @@ export function ChatButton({ sellerId }: { sellerId: string }) {
         onClick={() => start.mutate()}
         disabled={start.isPending}
       >
-        {start.isPending ? 'Opening chat...' : 'Chat'}
+        {start.isPending ? 'Opening chat...' : 'Contact seller'}
       </Button>
       {start.isError && (
         <Alert severity="error">Could not open chat. Please try again.</Alert>
