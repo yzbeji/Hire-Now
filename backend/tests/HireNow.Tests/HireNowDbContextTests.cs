@@ -22,9 +22,22 @@ public class HireNowDbContextTests
             .GetSeedData()
             .Select(row => (string)row[nameof(Category.Name)]!);
 
+        // "Other" is the fallback category. GET /categories leaves it out of the choices.
         Assert.Equal(
-            ["Programming", "Graphic Design", "Consulting", "Tutoring", "Photography", "Home Repairs"],
+            ["Other", "Programming", "Graphic Design", "Consulting", "Tutoring", "Photography", "Home Repairs"],
             seeded);
+    }
+
+    [Fact]
+    public void Profile_entity_is_configured()
+    {
+        using var context = CreateContext();
+
+        var profile = context.Model.FindEntityType(typeof(Profile));
+
+        Assert.NotNull(profile);
+        Assert.Equal(1000, profile!.FindProperty(nameof(Profile.Bio))!.GetMaxLength());
+        Assert.Equal("UserId", profile.FindProperty(nameof(Profile.UserId))!.GetColumnName());
     }
 
     [Fact]

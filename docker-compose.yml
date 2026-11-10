@@ -60,6 +60,7 @@ services:
     environment:
       VITE_API_URL: http://localhost:5000
       VITE_USE_POLLING: "true"
+      VITE_KEYCLOAK_URL: http://localhost:8081
     ports:
       - "5173:5173"
     volumes:

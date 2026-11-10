@@ -20,9 +20,18 @@ async function request(path: string, init?: RequestInit) {
 
   const response = await fetch(`${baseUrl}${path}`, { ...init, headers })
   if (!response.ok) {
-    throw new Error(
+    let payload: unknown = undefined
+    const contentType = response.headers.get('content-type') ?? ''
+    if (contentType.includes('application/json')) {
+      payload = await response.json().catch(() => undefined)
+    }
+
+    const error = new Error(
       `${init?.method ?? 'GET'} ${path} failed with status ${response.status}`,
-    )
+    ) as Error & { status?: number; payload?: unknown }
+    error.status = response.status
+    error.payload = payload
+    throw error
   }
   return response
 }
@@ -32,10 +41,36 @@ export async function apiGet<T>(path: string): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export async function apiPost(path: string, body: unknown): Promise<void> {
-  await request(path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+async function readBody<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get('content-type') ?? ''
+  if (contentType.includes('json')) {
+    return response.json() as Promise<T>
+  }
+
+  return undefined as T
+}
+
+function jsonInit(method: string, body: unknown): RequestInit {
+  return body === undefined
+    ? { method }
+    : {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }
+}
+
+export async function apiPost<T = void>(
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  return readBody<T>(await request(path, jsonInit('POST', body)))
+}
+
+export async function apiPut<T>(path: string, body: unknown): Promise<T> {
+  return readBody<T>(await request(path, jsonInit('PUT', body)))
+}
+
+export async function apiDelete(path: string): Promise<void> {
+  await request(path, { method: 'DELETE' })
 }

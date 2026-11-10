@@ -95,7 +95,10 @@ it('shows the signed-in user and sends the token to the API', async () => {
 
   renderApp()
 
-  await screen.findByText('Signed in as sam (Seller)')
+  const account = await screen.findByRole('link', {
+    name: 'Signed in as sam (Seller)',
+  })
+  expect(account.getAttribute('href')).toBe('/profile')
   await screen.findByRole('button', { name: 'Sign out' })
   const headers = requestFor('/me')?.headers as Headers
   expect(headers.get('Authorization')).toBe('Bearer test-token')

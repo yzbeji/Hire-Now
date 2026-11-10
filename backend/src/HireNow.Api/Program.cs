@@ -1,4 +1,7 @@
 using System.Security.Claims;
+using HireNow.Api.Development;
+using HireNow.Api.Listings;
+using HireNow.Api.Services;
 using HireNow.Application.Accounts;
 using HireNow.Domain;
 using HireNow.Infrastructure;
@@ -11,6 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHostedService<DevelopmentDataSeeder>();
+}
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .WithOrigins(builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? [])
     .AllowAnyHeader()
@@ -60,6 +67,18 @@ app.MapGet("/me", (ClaimsPrincipal user) => TypedResults.Ok(new
     Roles = user.FindAll("roles").Select(claim => claim.Value).Where(role => AccountRoles.All.Contains(role)),
 })).RequireAuthorization();
 
+app.MapGet("/me/profile", GetCurrentProfile).RequireAuthorization();
+app.MapGet("/profiles/{userId}", GetProfileByUserId);
+app.MapGet("/categories", async (HireNowDbContext db, CancellationToken cancellationToken) =>
+    TypedResults.Ok(await db.Categories
+        .Where(c => c.Name != Category.Other.Name)
+        .OrderBy(c => c.Name)
+        .Select(c => new { c.Id, c.Name })
+        .ToListAsync(cancellationToken)));
+app.MapPut("/me/profile", UpdateCurrentProfile).RequireAuthorization();
+app.MapListingEndpoints();
+app.MapPublicServiceEndpoints();
+
 app.MapPost("/me/role", async Task<Results<NoContent, BadRequest, Conflict>> (
     ChooseRoleRequest request,
     ClaimsPrincipal user,
@@ -77,4 +96,74 @@ app.MapPost("/me/role", async Task<Results<NoContent, BadRequest, Conflict>> (
 
 app.Run();
 
+static async Task<IResult> GetCurrentProfile(ClaimsPrincipal user, HireNowDbContext db)
+{
+    var userId = user.FindFirstValue("sub");
+    if (string.IsNullOrWhiteSpace(userId))
+    {
+        return TypedResults.Unauthorized();
+    }
+
+    var profile = await db.Profiles.SingleOrDefaultAsync(p => p.UserId == userId);
+    return TypedResults.Ok(profile is null
+        ? new ProfileResponse(userId, string.Empty, string.Empty, string.Empty, string.Empty)
+        : new ProfileResponse(profile.UserId, profile.DisplayName, profile.Bio, profile.Location, profile.ProfilePhoto));
+}
+
+static async Task<IResult> GetProfileByUserId(string userId, HireNowDbContext db)
+{
+    var profile = await db.Profiles.SingleOrDefaultAsync(p => p.UserId == userId);
+    if (profile is null)
+    {
+        return TypedResults.NotFound();
+    }
+
+    return TypedResults.Ok(new ProfileResponse(profile.UserId, profile.DisplayName, profile.Bio, profile.Location, profile.ProfilePhoto));
+}
+
+static async Task<IResult> UpdateCurrentProfile(UpdateProfileRequest request, ClaimsPrincipal user, HireNowDbContext db, CancellationToken cancellationToken)
+{
+    if (string.IsNullOrWhiteSpace(request.DisplayName))
+    {
+        return TypedResults.BadRequest("Display name is required.");
+    }
+
+    if ((request.Bio?.Length ?? 0) > 1000)
+    {
+        return TypedResults.BadRequest("Bio cannot exceed 1000 characters.");
+    }
+
+    var userId = user.FindFirstValue("sub");
+    if (string.IsNullOrWhiteSpace(userId))
+    {
+        return TypedResults.BadRequest("Unable to resolve your user id.");
+    }
+
+    var profile = await db.Profiles.SingleOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+    if (profile is null)
+    {
+        profile = new Profile
+        {
+            UserId = userId,
+            DisplayName = request.DisplayName.Trim(),
+            Bio = request.Bio ?? string.Empty,
+            Location = request.Location ?? string.Empty,
+            ProfilePhoto = request.ProfilePhoto ?? string.Empty,
+        };
+        db.Profiles.Add(profile);
+    }
+    else
+    {
+        profile.DisplayName = request.DisplayName.Trim();
+        profile.Bio = request.Bio ?? string.Empty;
+        profile.Location = request.Location ?? string.Empty;
+        profile.ProfilePhoto = request.ProfilePhoto ?? string.Empty;
+    }
+
+    await db.SaveChangesAsync(cancellationToken);
+    return TypedResults.Ok(new ProfileResponse(profile.UserId, profile.DisplayName, profile.Bio, profile.Location, profile.ProfilePhoto));
+}
+
 internal sealed record ChooseRoleRequest(string Role);
+internal sealed record UpdateProfileRequest(string DisplayName, string? Bio, string? Location, string? ProfilePhoto);
+internal sealed record ProfileResponse(string UserId, string DisplayName, string Bio, string Location, string ProfilePhoto);
