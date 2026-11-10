@@ -27,7 +27,7 @@ export function ServiceDetail({ id }: { id: number }) {
   if (service.isError) {
     return (
       <Alert severity="error">
-        This service isn't available. Its provider may have removed it.
+        This service isn't available. Its provider may have unpublished or removed it.
       </Alert>
     )
   }
