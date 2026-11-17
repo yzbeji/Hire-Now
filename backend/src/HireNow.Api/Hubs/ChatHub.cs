@@ -1,4 +1,6 @@
+using HireNow.Api.Endpoints;
 using HireNow.Application.Chat;
+using HireNow.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -27,8 +29,7 @@ public class ChatHub : Hub
         return base.OnConnectedAsync();
     }
 
-    public async Task<MessageDto> SendMessage(Guid conversationId,
-                                              string content)
+    public async Task<ChatMessageResponse> SendMessage(Guid conversationId, string content)
     {
         var userId = Context.UserIdentifier;
 
@@ -37,20 +38,15 @@ public class ChatHub : Hub
             throw new HubException("Unable to identify your account.");
         }
 
-        ConversationDto conversation;
-        MessageDto message;
+        Conversation conversation;
+        ChatMessage message;
 
         try
         {
-            conversation = await _chatService.GetConversationAsync(conversationId,
-                                                                   userId,
-                                                                   Context.ConnectionAborted)
+            conversation = await _chatService.GetConversationAsync(conversationId, userId, Context.ConnectionAborted)
                 ?? throw new KeyNotFoundException("Conversation not found.");
 
-            message = await _chatService.SendMessageAsync(conversationId,
-                                                          userId,
-                                                          content,
-                                                          Context.ConnectionAborted);
+            message = await _chatService.SendMessageAsync(conversationId, userId, content, Context.ConnectionAborted);
         }
         catch (ArgumentException exception)
         {
@@ -61,11 +57,10 @@ public class ChatHub : Hub
             throw new HubException(exception.Message);
         }
 
-        await Clients.Users(
-            conversation.BuyerId,
-            conversation.SellerId
-        ).SendAsync("ReceiveMessage", message);
+        var response = ChatMessageResponse.From(message);
 
-        return message;
+        await Clients.Users(conversation.BuyerId, conversation.SellerId).SendAsync("ReceiveMessage", response);
+
+        return response;
     }
 }

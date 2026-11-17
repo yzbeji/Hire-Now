@@ -1,0 +1,7 @@
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.debug
+    cap_add:
+      - SYS_PTRACE

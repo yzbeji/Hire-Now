@@ -1,14 +1,17 @@
 using HireNow.Domain;
 using HireNow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace HireNow.Api.Development;
+namespace HireNow.Infrastructure.Development;
 
 /// <summary>
 /// Gives the realm's test users (seller, buyer) a profile and some listings, so the app has data to walk through.
 /// Runs in Development only, and does nothing once the seller has listings.
 /// </summary>
-internal sealed class DevelopmentDataSeeder(IServiceScopeFactory scopes, ILogger<DevelopmentDataSeeder> logger) : BackgroundService
+public sealed class DevelopmentDataSeeder(IServiceScopeFactory scopes, ILogger<DevelopmentDataSeeder> logger) : BackgroundService
 {
     // The fixed ids of the test users in keycloak/hirenow-realm.json.
     internal const string SellerId = "5e11e400-0000-4000-8000-000000000001";

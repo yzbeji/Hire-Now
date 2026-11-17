@@ -1,8 +1,7 @@
+using HireNow.Application.PublicServices;
 using HireNow.Domain;
-using HireNow.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
-namespace HireNow.Api.Services;
+namespace HireNow.Api.Endpoints;
 
 /// <summary>What anyone can see, signed in or not: seller profiles and Published services.</summary>
 /// <remarks>
@@ -20,14 +19,9 @@ internal static class PublicServiceEndpoints
         app.MapGet("/services/{id:int}", GetService);
     }
 
-    private static async Task<IResult> GetSeller(string userId, HireNowDbContext db, CancellationToken cancellationToken)
+    private static async Task<IResult> GetSeller(string userId, PublicServiceService publicServices, CancellationToken cancellationToken)
     {
-        var profile = await db.Profiles.SingleOrDefaultAsync(p => p.UserId == userId, cancellationToken);
-        var services = await db.Listings
-            .Include(l => l.Category)
-            .Where(l => l.UserId == userId && l.Status == ListingStatus.Published)
-            .OrderByDescending(l => l.Id)
-            .ToListAsync(cancellationToken);
+        var (profile, services) = await publicServices.GetSellerAsync(userId, cancellationToken);
 
         if (profile is null && services.Count == 0)
         {
@@ -48,20 +42,13 @@ internal static class PublicServiceEndpoints
 
     // Only Published services are public. Drafts and unpublished ones are a 404, even for their owner,
     // who manages them under "My services" instead.
-    private static async Task<IResult> GetService(int id, HireNowDbContext db, CancellationToken cancellationToken)
+    private static async Task<IResult> GetService(int id, PublicServiceService publicServices, CancellationToken cancellationToken)
     {
-        var listing = await db.Listings
-            .Include(l => l.Category)
-            .SingleOrDefaultAsync(l => l.Id == id && l.Status == ListingStatus.Published, cancellationToken);
+        var (listing, sellerName) = await publicServices.GetServiceAsync(id, cancellationToken);
         if (listing is null)
         {
             return TypedResults.NotFound();
         }
-
-        var sellerName = await db.Profiles
-            .Where(p => p.UserId == listing.UserId)
-            .Select(p => p.DisplayName)
-            .SingleOrDefaultAsync(cancellationToken);
 
         return TypedResults.Ok(new ServiceResponse(
             listing.Id,
